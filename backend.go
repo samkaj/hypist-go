@@ -8,25 +8,21 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var dbClient *mongo.Client
-
 func main() {
-  setupDb()
-  startServer()
+	r := gin.Default()
+	r.Use(mongoMiddleware)
+	r.POST("/users", PostUser)
+	r.Run()
 }
 
-func setupDb() {
+func mongoMiddleware(ctx *gin.Context) {
 	opts := options.Client().ApplyURI("mongodb://localhost:27017")
 	var err error
-	dbClient, err := mongo.Connect(context.Background(), opts)
+	client, err := mongo.Connect(context.Background(), opts)
 	if err != nil {
 		panic(err)
 	}
-	defer dbClient.Disconnect(context.Background())
-}
-
-func startServer() {
-	r := gin.Default()
-	r.POST("/users", PostUser)
-	r.Run()
+	defer client.Disconnect(context.Background())
+	ctx.Set("db", client.Database("hypist"))
+	ctx.Next()
 }
