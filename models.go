@@ -8,9 +8,9 @@ const (
 )
 
 type User struct {
-  Name     string `json:"name" bson:"name"`
-  Email    string `json:"email" bson:"email"`
-  Password string `json:"-" bson:"password"`
+	Name     string `json:"name" bson:"name"`
+	Email    string `json:"email" bson:"email"`
+	Password string `json:"-" bson:"password"`
 	Runs     []Run  `json:"runs" bson:"runs"`
 }
 
