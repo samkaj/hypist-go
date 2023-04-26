@@ -12,6 +12,7 @@ func main() {
 	r := gin.Default()
 	r.Use(mongoMiddleware)
 	r.POST("/users", PostUser)
+  r.DELETE("/users", DelUser)
 	r.Run()
 }
 

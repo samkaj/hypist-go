@@ -40,9 +40,9 @@ func InsertUser(ctx context.Context, db *mongo.Database, user *User) (*User, err
 func DeleteUser(ctx context.Context, db *mongo.Database, name string) error {
 	collection := db.Collection(usersCollectionName)
 	filter := bson.D{{"name", name}}
-	err := collection.FindOneAndDelete(ctx, filter)
+	_, err := collection.DeleteOne(ctx, filter)
 	if err != nil {
-		return fmt.Errorf("failed to delete user: %w", err)
+		return errors.New(fmt.Sprintf("failed to delete user: %v", err))
 	}
 
 	fmt.Printf("[hypist] deleted user: %s\n", name)
