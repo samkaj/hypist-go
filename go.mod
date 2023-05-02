@@ -1,4 +1,4 @@
-module hypist/backend
+module hypist
 
 go 1.19
 
