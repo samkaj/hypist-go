@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -11,8 +12,9 @@ import (
 func main() {
 	r := gin.Default()
 	r.Use(mongoMiddleware)
+	r.Use(cors.Default())
 	r.POST("/users", PostUser)
-  r.DELETE("/users", DelUser)
+	r.DELETE("/users", DelUser)
 	r.Run()
 }
 
