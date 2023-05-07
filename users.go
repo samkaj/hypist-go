@@ -49,6 +49,20 @@ func DeleteUser(ctx context.Context, db *mongo.Database, name string) error {
 	return nil
 }
 
+func GetUser(ctx context.Context, db *mongo.Database, field string, value string) (*User, error) {
+	collection := db.Collection(usersCollectionName)
+	filter := bson.D{{field, value}}
+	var result User
+	err := collection.FindOne(ctx, filter).Decode(&result)
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			return nil, err
+		}
+		panic(err)
+	}
+	return &result, nil
+}
+
 func (u *User) validate() error {
 	if len(u.Password) < 8 {
 		return errors.New("password must be at least 8 characters long")

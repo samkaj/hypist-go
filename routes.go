@@ -54,4 +54,37 @@ func DelUser(ctx *gin.Context) {
 		fmt.Printf("[hypist] err: %v\n", err)
 		ctx.JSON(http.StatusInternalServerError, fmt.Errorf("failed to delete user: %w", err))
 	}
+
+	ctx.IndentedJSON(http.StatusOK, "user deleted")
+}
+
+func FindUser(ctx *gin.Context) {
+	email := ctx.Query("email")
+	name := ctx.Query("name")
+	fmt.Println(name)
+	var field string
+	var value string
+	if email == "" && name == "" {
+		ctx.JSON(http.StatusBadRequest, "parameters name and email missing")
+		return
+	}
+
+	if email == "" {
+		field = "name"
+		value = name
+	} else {
+		field = "email"
+		value = email
+	}
+
+	db := ctx.MustGet("db").(*mongo.Database)
+	user, err := GetUser(ctx, db, field, value)
+	fmt.Println(user)
+	if err != nil {
+		fmt.Printf("[hypist] err: %v\n", err)
+		ctx.JSON(http.StatusNotFound, "user not found")
+		return
+	}
+
+	ctx.IndentedJSON(http.StatusOK, user)
 }

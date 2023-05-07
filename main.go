@@ -15,6 +15,7 @@ func main() {
 	r.Use(cors.Default())
 	r.POST("/users", PostUser)
 	r.DELETE("/users", DelUser)
+  r.GET("/users", FindUser)
 	r.Run()
 }
 
