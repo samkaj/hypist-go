@@ -3,9 +3,11 @@ package api
 import (
 	"fmt"
 	"hypist/database"
+	"hypist/validation"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -17,6 +19,15 @@ type newUserRequest struct {
 
 type deleteUserRequest struct {
 	Name string `json:"name"`
+}
+
+type signInRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type accessToken struct {
+	Token string `json:"accessToken"`
 }
 
 func PostUser(ctx *gin.Context) {
@@ -88,4 +99,48 @@ func FindUser(ctx *gin.Context) {
 	}
 
 	ctx.IndentedJSON(http.StatusOK, user)
+}
+
+func SignIn(ctx *gin.Context) {
+	var request signInRequest
+
+	if err := ctx.BindJSON(&request); err != nil {
+		ctx.JSON(http.StatusBadRequest, "email or password missing")
+		return
+	}
+
+	db := ctx.MustGet("database").(*mongo.Database)
+	user, err := database.GetUser(ctx, db, "email", request.Email)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, "user not found")
+		return
+	}
+  
+  if err != nil {
+    ctx.JSON(http.StatusInternalServerError, "failed to hash password")
+    return
+  }
+
+	correctPassword := validation.CheckPasswordHash(request.Password, user.Password)
+	if !correctPassword {
+		ctx.JSON(http.StatusUnauthorized, "incorrect password")
+		return
+	}
+
+  // TODO: import a secure key from env
+	secret := []byte("verysecret") 
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"usr": request.Email,
+	})
+
+	tokenString, err := token.SignedString(secret)
+	if err != nil {
+    fmt.Println(err)
+		ctx.JSON(http.StatusInternalServerError, "failed to sign token")
+		return
+	}
+
+	res := accessToken{Token: tokenString}
+  fmt.Println(res)
+	ctx.IndentedJSON(http.StatusOK, res)
 }

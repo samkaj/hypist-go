@@ -17,6 +17,7 @@ func main() {
 	r.POST("/users", api.PostUser)
 	r.DELETE("/users", api.DelUser)
 	r.GET("/users", api.FindUser)
+	r.POST("/signin", api.SignIn)
 	err := r.Run()
 	if err != nil {
 		panic(err)
