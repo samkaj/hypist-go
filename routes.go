@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"hypist/database"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -19,17 +20,17 @@ type deleteUserRequest struct {
 }
 
 func PostUser(ctx *gin.Context) {
-	var reqBody newUserRequest
+	var request newUserRequest
 
-	if err := ctx.BindJSON(&reqBody); err != nil {
+	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Printf("[hypist] err: %v\n", err)
 		ctx.JSON(http.StatusBadRequest, fmt.Errorf("failed to insert user: %w", err))
 		return
 	}
 
-	runs := []Run{}
-	db := ctx.MustGet("db").(*mongo.Database)
-	user, err := InsertUser(ctx, db, &User{Name: reqBody.Name, Email: reqBody.Email, Password: reqBody.Password, Runs: runs})
+	var runs []database.Run
+	db := ctx.MustGet("database").(*mongo.Database)
+	user, err := database.InsertUser(ctx, db, &database.User{Name: request.Name, Email: request.Email, Password: request.Password, Runs: runs})
 	if err != nil {
 		fmt.Printf("[hypist] err: %v\n", err)
 		ctx.JSON(http.StatusInternalServerError, fmt.Errorf("failed to insert user: %w", err))
@@ -40,16 +41,16 @@ func PostUser(ctx *gin.Context) {
 }
 
 func DelUser(ctx *gin.Context) {
-	var reqBody deleteUserRequest
+	var request deleteUserRequest
 
-	if err := ctx.BindJSON(&reqBody); err != nil {
+	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Printf("[hypist] err: %v\n", err)
 		ctx.JSON(http.StatusBadRequest, fmt.Errorf("failed to delete user: %w", err))
 		return
 	}
 
-	db := ctx.MustGet("db").(*mongo.Database)
-	err := DeleteUser(ctx, db, reqBody.Name)
+	db := ctx.MustGet("database").(*mongo.Database)
+	err := database.DeleteUser(ctx, db, request.Name)
 	if err != nil {
 		fmt.Printf("[hypist] err: %v\n", err)
 		ctx.JSON(http.StatusInternalServerError, fmt.Errorf("failed to delete user: %w", err))
@@ -77,8 +78,8 @@ func FindUser(ctx *gin.Context) {
 		value = email
 	}
 
-	db := ctx.MustGet("db").(*mongo.Database)
-	user, err := GetUser(ctx, db, field, value)
+	db := ctx.MustGet("database").(*mongo.Database)
+	user, err := database.GetUser(ctx, db, field, value)
 	fmt.Println(user)
 	if err != nil {
 		fmt.Printf("[hypist] err: %v\n", err)

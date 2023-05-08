@@ -1,13 +1,13 @@
-package main
+package database
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"hypist/validation"
+	"strings"
 )
 
 const usersCollectionName = "users"
@@ -21,7 +21,7 @@ func InsertUser(ctx context.Context, db *mongo.Database, user *User) (*User, err
 		return nil, err
 	}
 
-	hashedPassword, err := HashPassword(user.Password)
+	hashedPassword, err := validation.HashPassword(user.Password)
 	if err != nil {
 		return nil, fmt.Errorf("failed to hash password: %w", err)
 	}

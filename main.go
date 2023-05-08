@@ -15,8 +15,11 @@ func main() {
 	r.Use(cors.Default())
 	r.POST("/users", PostUser)
 	r.DELETE("/users", DelUser)
-  r.GET("/users", FindUser)
-	r.Run()
+	r.GET("/users", FindUser)
+	err := r.Run()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func mongoMiddleware(ctx *gin.Context) {
@@ -27,6 +30,6 @@ func mongoMiddleware(ctx *gin.Context) {
 		panic(err)
 	}
 	defer client.Disconnect(context.Background())
-	ctx.Set("db", client.Database("hypist"))
+	ctx.Set("database", client.Database("hypist"))
 	ctx.Next()
 }
