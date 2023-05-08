@@ -83,7 +83,7 @@ func DelUser(ctx *gin.Context) {
 	db := ctx.MustGet("database").(*mongo.Database)
 	err := database.DeleteUser(ctx, db, request.Name)
 	if err != nil {
-		fmt.Printf("[hypist] err: %v\n", err)
+		fmt.Printf("[hypist] err: failed to delete user:\n\t%v\n", err)
 		ctx.JSON(http.StatusInternalServerError, fmt.Errorf("failed to delete user: %w", err))
 	}
 
@@ -97,6 +97,7 @@ func FindUser(ctx *gin.Context) {
 	var field string
 	var value string
 	if email == "" && name == "" {
+		fmt.Println("[hypist] info: received find user request without parameters")
 		ctx.JSON(http.StatusBadRequest, "parameters name and email missing")
 		return
 	}
@@ -113,7 +114,7 @@ func FindUser(ctx *gin.Context) {
 	user, err := database.GetUser(ctx, db, field, value)
 	fmt.Println(user)
 	if err != nil {
-		fmt.Printf("[hypist] err: %v\n", err)
+		fmt.Printf("[hypist] info: user not found:\n\t%v\n", err)
 		ctx.JSON(http.StatusNotFound, "user not found")
 		return
 	}
@@ -125,6 +126,7 @@ func SignIn(ctx *gin.Context) {
 	var request signInRequest
 
 	if err := ctx.BindJSON(&request); err != nil {
+		fmt.Printf("[hypist] info: received incomplete request body:\n\t%v\n", err)
 		ctx.JSON(http.StatusBadRequest, "email or password missing")
 		return
 	}
@@ -132,35 +134,38 @@ func SignIn(ctx *gin.Context) {
 	db := ctx.MustGet("database").(*mongo.Database)
 	user, err := database.GetUser(ctx, db, "email", request.Email)
 	if err != nil {
+		fmt.Printf("[hypist] info: user not found:\n\t%v\n", err)
 		ctx.JSON(http.StatusNotFound, "user not found")
 		return
 	}
-  
-  if err != nil {
-    ctx.JSON(http.StatusInternalServerError, "failed to hash password")
-    return
-  }
+
+	if err != nil {
+		fmt.Printf("[hypist] warn: failed to hash password:\n\t%v\n", err)
+		ctx.JSON(http.StatusInternalServerError, "failed to hash password")
+		return
+	}
 
 	correctPassword := validation.CheckPasswordHash(request.Password, user.Password)
 	if !correctPassword {
+    fmt.Printf("[hypist] info: incorrect password:\n\t%v\n", err)
 		ctx.JSON(http.StatusUnauthorized, "incorrect password")
 		return
 	}
 
-  // TODO: import a secure key from env
-	secret := []byte("verysecret") 
+	// TODO: import a secure key from env
+	secret := []byte("verysecret")
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"usr": request.Email,
+		"email": request.Email,
 	})
 
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
-    fmt.Println(err)
+		fmt.Printf("[hypist] info: failed to sign token:\n\t%v\n", err)
 		ctx.JSON(http.StatusInternalServerError, "failed to sign token")
 		return
 	}
 
 	res := accessToken{Token: tokenString}
-  fmt.Println(res)
+	fmt.Println(res)
 	ctx.IndentedJSON(http.StatusOK, res)
 }
