@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"fmt"
@@ -62,7 +62,7 @@ func DelUser(ctx *gin.Context) {
 func FindUser(ctx *gin.Context) {
 	email := ctx.Query("email")
 	name := ctx.Query("name")
-	fmt.Println(name)
+
 	var field string
 	var value string
 	if email == "" && name == "" {

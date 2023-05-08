@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"hypist/api"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -13,9 +14,9 @@ func main() {
 	r := gin.Default()
 	r.Use(mongoMiddleware)
 	r.Use(cors.Default())
-	r.POST("/users", PostUser)
-	r.DELETE("/users", DelUser)
-	r.GET("/users", FindUser)
+	r.POST("/users", api.PostUser)
+	r.DELETE("/users", api.DelUser)
+	r.GET("/users", api.FindUser)
 	err := r.Run()
 	if err != nil {
 		panic(err)
