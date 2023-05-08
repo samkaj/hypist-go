@@ -30,6 +30,11 @@ type accessToken struct {
 	Token string `json:"accessToken"`
 }
 
+type signUpResponse struct {
+	User  database.User
+	Token string `json:"accessToken"`
+}
+
 func PostUser(ctx *gin.Context) {
 	var request newUserRequest
 
@@ -43,19 +48,34 @@ func PostUser(ctx *gin.Context) {
 	db := ctx.MustGet("database").(*mongo.Database)
 	user, err := database.InsertUser(ctx, db, &database.User{Name: request.Name, Email: request.Email, Password: request.Password, Runs: runs})
 	if err != nil {
-		fmt.Printf("[hypist] err: %v\n", err)
-		ctx.JSON(http.StatusInternalServerError, fmt.Errorf("failed to insert user: %w", err))
+		fmt.Printf("[hypist] err: username or email taken:\n\t %v\n", err)
+		ctx.JSON(http.StatusInternalServerError, "username or email taken")
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusCreated, user)
+	// TODO: import a secure key from env
+	secret := []byte("verysecret")
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": request.Email,
+	})
+
+	tokenString, err := token.SignedString(secret)
+	if err != nil {
+		fmt.Printf("[hypist]: failed to sign token:\n\t%v\n", err)
+		ctx.JSON(http.StatusInternalServerError, "failed to sign token")
+		return
+	}
+
+	res := signUpResponse{User: *user, Token: tokenString}
+	fmt.Println(res)
+	ctx.IndentedJSON(http.StatusCreated, res)
 }
 
 func DelUser(ctx *gin.Context) {
 	var request deleteUserRequest
 
 	if err := ctx.BindJSON(&request); err != nil {
-		fmt.Printf("[hypist] err: %v\n", err)
+		fmt.Printf("[hypist] err: failed to delete user:\n\t%v\n", err)
 		ctx.JSON(http.StatusBadRequest, fmt.Errorf("failed to delete user: %w", err))
 		return
 	}
