@@ -1,4 +1,4 @@
-package main
+package validation
 
 import "golang.org/x/crypto/bcrypt"
 
