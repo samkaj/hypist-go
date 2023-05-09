@@ -14,7 +14,7 @@ func main() {
 	r := gin.Default()
 	r.Use(mongoMiddleware)
 	r.Use(cors.Default())
-	r.POST("/users", api.PostUser)
+	r.POST("/signup", api.SignUp)
 	r.DELETE("/users", api.DelUser)
 	r.GET("/users", api.FindUser)
 	r.POST("/signin", api.SignIn)
