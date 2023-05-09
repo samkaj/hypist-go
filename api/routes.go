@@ -11,32 +11,17 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type newUserRequest struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type deleteUserRequest struct {
-	Name string `json:"name"`
-}
-
-type signInRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type accessToken struct {
 	Token string `json:"accessToken"`
 }
 
-type signUpResponse struct {
-	User  database.User
-	Token string `json:"accessToken"`
-}
-
 func PostUser(ctx *gin.Context) {
-	var request newUserRequest
+	var request struct {
+		Name     string
+		Email    string
+		Password string
+		Runs     []database.Run
+	}
 
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Printf("[hypist] err: %v\n", err)
@@ -66,13 +51,18 @@ func PostUser(ctx *gin.Context) {
 		return
 	}
 
-	res := signUpResponse{User: *user, Token: tokenString}
-	fmt.Println(res)
+	res := struct {
+		User  database.User
+		Token string `json:"accessToken"`
+	}{User: *user, Token: tokenString}
+
 	ctx.IndentedJSON(http.StatusCreated, res)
 }
 
 func DelUser(ctx *gin.Context) {
-	var request deleteUserRequest
+	var request struct {
+		Name string
+	}
 
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Printf("[hypist] err: failed to delete user:\n\t%v\n", err)
@@ -123,7 +113,10 @@ func FindUser(ctx *gin.Context) {
 }
 
 func SignIn(ctx *gin.Context) {
-	var request signInRequest
+	var request struct {
+		Email    string
+		Password string
+	}
 
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Printf("[hypist] info: received incomplete request body:\n\t%v\n", err)
@@ -147,7 +140,7 @@ func SignIn(ctx *gin.Context) {
 
 	correctPassword := validation.CheckPasswordHash(request.Password, user.Password)
 	if !correctPassword {
-    fmt.Printf("[hypist] info: incorrect password:\n\t%v\n", err)
+		fmt.Printf("[hypist] info: incorrect password:\n\t%v\n", err)
 		ctx.JSON(http.StatusUnauthorized, "incorrect password")
 		return
 	}
