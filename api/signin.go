@@ -62,7 +62,6 @@ func SignIn(ctx *gin.Context) {
 	}
 
 	res := accessToken{Token: tokenString}
-	fmt.Println(res)
 	ctx.IndentedJSON(http.StatusOK, res)
 }
 

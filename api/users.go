@@ -12,7 +12,7 @@ import (
 
 func DelUser(ctx *gin.Context) {
 	var request struct {
-		Name string
+		Email string
 	}
 
 	if err := ctx.BindJSON(&request); err != nil {
@@ -22,7 +22,7 @@ func DelUser(ctx *gin.Context) {
 	}
 
 	db := ctx.MustGet("database").(*mongo.Database)
-	err := database.DeleteUser(ctx, db, request.Name)
+	err := database.DeleteUser(ctx, db, request.Email)
 	if err != nil {
 		fmt.Printf("[hypist] err: failed to delete user:\n\t%v\n", err)
 		ctx.JSON(http.StatusInternalServerError, fmt.Errorf("failed to delete user: %w", err))
@@ -31,7 +31,7 @@ func DelUser(ctx *gin.Context) {
 	ctx.IndentedJSON(http.StatusOK, "user deleted")
 }
 
-func FindUser(ctx *gin.Context) {
+func LookupUser(ctx *gin.Context) {
 	email := ctx.Query("email")
 	name := ctx.Query("name")
 
@@ -60,5 +60,30 @@ func FindUser(ctx *gin.Context) {
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusOK, user)
+	ctx.IndentedJSON(http.StatusFound, "user exists")
+}
+
+func GetUser(ctx *gin.Context) {
+  email := ctx.GetString("email")
+
+  if email == "" {
+    ctx.JSON(http.StatusBadRequest, "no email supplied")
+    return
+  }
+
+  db := ctx.MustGet("database").(*mongo.Database)
+  user, err := database.GetUser(ctx, db, "email", email)
+  if err != nil {
+    ctx.JSON(http.StatusNotFound, "no account matches email")
+    return 
+  }
+  
+  ret := database.User{
+    Email :user.Email,
+    Name: user.Name,
+    Password: "ommitted",
+    Runs: user.Runs,
+  }
+
+  ctx.IndentedJSON(http.StatusFound, &ret)
 }
