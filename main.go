@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"hypist/api"
 	"net/http"
 
@@ -50,6 +49,7 @@ func verifyJWT(endpointHandler gin.HandlerFunc) gin.HandlerFunc {
 		if err := ctx.BindJSON(&body); err != nil {
 			ctx.JSON(http.StatusUnauthorized, "missing token")
       ctx.Abort()
+      return
 		}
 
 		token, err := jwt.ParseWithClaims(body.Token, &jwt.MapClaims{"email": body.Email}, func(t *jwt.Token) (interface{}, error) {
@@ -60,11 +60,13 @@ func verifyJWT(endpointHandler gin.HandlerFunc) gin.HandlerFunc {
 		if err != nil {
 			ctx.JSON(http.StatusUnauthorized, "failed to parse token")
       ctx.Abort()
+      return
 		}
 
 		if !token.Valid {
 			ctx.JSON(http.StatusUnauthorized, "invalid token")
       ctx.Abort()
+      return
 		}
 
     ctx.Set("email", body.Email)
