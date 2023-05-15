@@ -20,7 +20,7 @@ func SignUp(ctx *gin.Context) {
 
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Printf("[hypist] err: %v\n", err)
-		ctx.JSON(http.StatusBadRequest, fmt.Errorf("failed to insert user: %w", err))
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": "failed to read request"})
 		return
 	}
 
@@ -28,8 +28,8 @@ func SignUp(ctx *gin.Context) {
 	db := ctx.MustGet("database").(*mongo.Database)
 	user, err := database.InsertUser(ctx, db, &database.User{Name: request.Name, Email: request.Email, Password: request.Password, Runs: runs})
 	if err != nil {
-		fmt.Printf("[hypist] err: username or email taken:\n\t %v\n", err)
-		ctx.JSON(http.StatusInternalServerError, "username or email taken")
+		fmt.Printf("[hypist] err: \n\t %v\n", err)
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": fmt.Sprintf("%v", err)})
 		return
 	}
 
@@ -42,7 +42,7 @@ func SignUp(ctx *gin.Context) {
 	tokenString, err := token.SignedString(secret)
 	if err != nil {
 		fmt.Printf("[hypist]: failed to sign token:\n\t%v\n", err)
-		ctx.JSON(http.StatusInternalServerError, "failed to sign token")
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": "failed to sign token"})
 		return
 	}
 
