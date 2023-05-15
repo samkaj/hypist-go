@@ -62,6 +62,6 @@ func SignIn(ctx *gin.Context) {
 	}
 
 	res := accessToken{Token: tokenString}
-	ctx.IndentedJSON(http.StatusOK, res)
+  ctx.IndentedJSON(http.StatusOK, map[string]interface{}{"data": res})
 }
 

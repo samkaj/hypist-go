@@ -51,5 +51,5 @@ func SignUp(ctx *gin.Context) {
 		Token string `json:"accessToken"`
 	}{User: *user, Token: tokenString}
 
-	ctx.IndentedJSON(http.StatusCreated, res)
+  ctx.IndentedJSON(http.StatusCreated, map[string]interface{}{"data": res})
 }
