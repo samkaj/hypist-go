@@ -11,10 +11,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type accessToken struct {
-	Token string `json:"accessToken"`
-}
-
 func SignIn(ctx *gin.Context) {
 	var request struct {
 		Email    string
@@ -61,7 +57,6 @@ func SignIn(ctx *gin.Context) {
 		return
 	}
 
-	res := accessToken{Token: tokenString}
-  ctx.IndentedJSON(http.StatusOK, map[string]interface{}{"data": res})
+  ctx.IndentedJSON(http.StatusOK, map[string]interface{}{"token": tokenString})
 }
 
