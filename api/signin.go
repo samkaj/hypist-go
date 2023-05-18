@@ -57,6 +57,5 @@ func SignIn(ctx *gin.Context) {
 		return
 	}
 
-  ctx.IndentedJSON(http.StatusOK, map[string]interface{}{"token": tokenString})
+  ctx.IndentedJSON(http.StatusOK, map[string]interface{}{"token": tokenString, "user": user})
 }
-
