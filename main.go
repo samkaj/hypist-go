@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
-	"hypist/api"
-	"net/http"
-
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"hypist/api"
+	"net/http"
 	"os"
 )
 
