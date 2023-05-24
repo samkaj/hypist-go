@@ -9,7 +9,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-
 func DelUser(ctx *gin.Context) {
 	var request struct {
 		Email string
@@ -17,7 +16,7 @@ func DelUser(ctx *gin.Context) {
 
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Printf("[hypist] err: failed to delete user:\n\t%v\n", err)
-		ctx.JSON(http.StatusBadRequest, fmt.Errorf("failed to delete user: %w", err))
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": "incomplete request body"})
 		return
 	}
 
@@ -25,21 +24,23 @@ func DelUser(ctx *gin.Context) {
 	err := database.DeleteUser(ctx, db, request.Email)
 	if err != nil {
 		fmt.Printf("[hypist] err: failed to delete user:\n\t%v\n", err)
-		ctx.JSON(http.StatusInternalServerError, fmt.Errorf("failed to delete user: %w", err))
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": "failed to delete user"})
+		return
 	}
-
-	ctx.IndentedJSON(http.StatusOK, "user deleted")
+	ctx.IndentedJSON(http.StatusFound, map[string]interface{}{"message": "user deleted"})
 }
 
 func LookupUser(ctx *gin.Context) {
 	email := ctx.Query("email")
 	name := ctx.Query("name")
+	fmt.Println(email)
+	fmt.Println(name)
 
 	var field string
 	var value string
 	if email == "" && name == "" {
 		fmt.Println("[hypist] info: received find user request without parameters")
-		ctx.JSON(http.StatusBadRequest, "parameters name and email missing")
+		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": "parameters name and email missing"})
 		return
 	}
 
@@ -52,38 +53,37 @@ func LookupUser(ctx *gin.Context) {
 	}
 
 	db := ctx.MustGet("database").(*mongo.Database)
-	user, err := database.GetUser(ctx, db, field, value)
-	fmt.Println(user)
+	_, err := database.GetUser(ctx, db, field, value)
 	if err != nil {
 		fmt.Printf("[hypist] info: user not found:\n\t%v\n", err)
-		ctx.JSON(http.StatusNotFound, "user not found")
+		ctx.JSON(http.StatusNotFound, map[string]interface{}{"error": "user not found"})
 		return
 	}
 
-	ctx.IndentedJSON(http.StatusFound, "user exists")
+	ctx.IndentedJSON(http.StatusFound, map[string]interface{}{"message": "user exists"})
 }
 
 func GetUser(ctx *gin.Context) {
-  email := ctx.GetString("email")
+	email := ctx.GetString("email")
 
-  if email == "" {
-    ctx.JSON(http.StatusBadRequest, "no email supplied")
-    return
-  }
+	if email == "" {
+		ctx.JSON(http.StatusBadRequest, "no email supplied")
+		return
+	}
 
-  db := ctx.MustGet("database").(*mongo.Database)
-  user, err := database.GetUser(ctx, db, "email", email)
-  if err != nil {
-    ctx.JSON(http.StatusNotFound, "no account matches email")
-    return 
-  }
-  
-  ret := database.User{
-    Email :user.Email,
-    Name: user.Name,
-    Password: "ommitted",
-    Runs: user.Runs,
-  }
+	db := ctx.MustGet("database").(*mongo.Database)
+	user, err := database.GetUser(ctx, db, "email", email)
+	if err != nil {
+    ctx.JSON(http.StatusNotFound, map[string]interface{}{"error":"no account matches email"})
+		return
+	}
 
-  ctx.IndentedJSON(http.StatusFound, &ret)
+	ret := database.User{
+		Email:    user.Email,
+		Name:     user.Name,
+		Password: "ommitted",
+		Runs:     user.Runs,
+	}
+
+	ctx.IndentedJSON(http.StatusFound, map[string]interface{}{"data": &ret})
 }
