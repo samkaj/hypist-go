@@ -53,7 +53,7 @@ func verifyJWT(endpointHandler gin.HandlerFunc) gin.HandlerFunc {
 		}
 
 		if err := ctx.BindJSON(&body); err != nil {
-			ctx.JSON(http.StatusUnauthorized, "missing token")
+			ctx.JSON(http.StatusUnauthorized, "missing token or email")
 			ctx.Abort()
 			return
 		}
