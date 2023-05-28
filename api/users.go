@@ -85,5 +85,5 @@ func GetUser(ctx *gin.Context) {
 		Password: "ommitted",
 	}
 
-	ctx.IndentedJSON(http.StatusFound, map[string]interface{}{"data": &ret})
+	ctx.IndentedJSON(http.StatusFound, map[string]interface{}{"user": &ret})
 }
