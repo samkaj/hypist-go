@@ -6,6 +6,7 @@ import (
 	"hypist/validation"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -46,8 +47,10 @@ func SignIn(ctx *gin.Context) {
 	}
 
 	secret := []byte(os.Getenv("JWT_SECRET"))
+	expiresAt := time.Now().Add(time.Hour * 24 * 7).Unix()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": request.Email,
+		"exp":   expiresAt,
 	})
 
 	tokenString, err := token.SignedString(secret)
@@ -57,5 +60,5 @@ func SignIn(ctx *gin.Context) {
 		return
 	}
 
-  ctx.IndentedJSON(http.StatusOK, map[string]interface{}{"token": tokenString, "user": user})
+	ctx.IndentedJSON(http.StatusOK, map[string]interface{}{"token": tokenString, "user": user})
 }
