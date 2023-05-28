@@ -28,8 +28,7 @@ func main() {
 	r.GET("/users", verifyJWT(api.GetUser))
 	r.HEAD("/users", api.LookupUser)
 	r.POST("/signin", api.SignIn)
-	err = r.Run()
-	if err != nil {
+	if err = r.Run(); err != nil {
 		panic(err)
 	}
 }
@@ -74,8 +73,7 @@ func verifyJWT(endpointHandler gin.HandlerFunc) gin.HandlerFunc {
 		}
 
 		token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{"email": body.Email}, func(t *jwt.Token) (interface{}, error) {
-			// TODO: import a secure key from env
-			return []byte("verysecret"), nil
+			return []byte(os.Getenv("JWT_SECRET")), nil
 		})
 
 		if err != nil {

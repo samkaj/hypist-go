@@ -5,6 +5,7 @@ import (
 	"hypist/database"
 	"hypist/validation"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -44,8 +45,7 @@ func SignIn(ctx *gin.Context) {
 		return
 	}
 
-	// TODO: import a secure key from env
-	secret := []byte("verysecret")
+	secret := []byte(os.Getenv("JWT_SECRET"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email": request.Email,
 	})
