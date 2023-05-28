@@ -2,15 +2,17 @@ package main
 
 import (
 	"context"
+	"hypist/api"
+	"net/http"
+	"os"
+	"strings"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"hypist/api"
-	"net/http"
-	"os"
 )
 
 func main() {
@@ -48,8 +50,22 @@ func verifyJWT(endpointHandler gin.HandlerFunc) gin.HandlerFunc {
 	return gin.HandlerFunc(func(ctx *gin.Context) {
 		var body struct {
 			Email string `json:"email"`
-			Token string `json:"token"`
 		}
+
+		authHeader := ctx.GetHeader("Authorization")
+		if authHeader == "" {
+			ctx.JSON(http.StatusUnauthorized, "missing authorization header")
+			ctx.Abort()
+			return
+		}
+
+		authParts := strings.Split(authHeader, " ")
+		if !strings.HasPrefix(authHeader, "Bearer ") || len(authParts) != 2 {
+			ctx.JSON(http.StatusUnauthorized, "invalid authorization header")
+			ctx.Abort()
+			return
+		}
+		tokenString := strings.Split(authHeader, " ")[1]
 
 		if err := ctx.BindJSON(&body); err != nil {
 			ctx.JSON(http.StatusUnauthorized, "missing token or email")
@@ -57,7 +73,7 @@ func verifyJWT(endpointHandler gin.HandlerFunc) gin.HandlerFunc {
 			return
 		}
 
-		token, err := jwt.ParseWithClaims(body.Token, &jwt.MapClaims{"email": body.Email}, func(t *jwt.Token) (interface{}, error) {
+		token, err := jwt.ParseWithClaims(tokenString, &jwt.MapClaims{"email": body.Email}, func(t *jwt.Token) (interface{}, error) {
 			// TODO: import a secure key from env
 			return []byte("verysecret"), nil
 		})
