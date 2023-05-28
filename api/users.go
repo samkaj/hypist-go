@@ -74,15 +74,15 @@ func GetUser(ctx *gin.Context) {
 	db := ctx.MustGet("database").(*mongo.Database)
 	user, err := database.GetUser(ctx, db, "email", email)
 	if err != nil {
-    ctx.JSON(http.StatusNotFound, map[string]interface{}{"error":"no account matches email"})
+		ctx.JSON(http.StatusNotFound, map[string]interface{}{"error": "no account matches email"})
 		return
 	}
 
 	ret := database.User{
+		ID:       user.ID,
 		Email:    user.Email,
 		Name:     user.Name,
 		Password: "ommitted",
-		Runs:     user.Runs,
 	}
 
 	ctx.IndentedJSON(http.StatusFound, map[string]interface{}{"data": &ret})
