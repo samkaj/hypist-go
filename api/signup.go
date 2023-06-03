@@ -12,10 +12,10 @@ import (
 
 func SignUp(ctx *gin.Context) {
 	var request struct {
-		Name     string
-		Email    string
-		Password string
-	}
+    Name     string `json:"name"`
+    Email    string `json:"email"`
+    Password string `json:"password"`
+  }
 
 	if err := ctx.BindJSON(&request); err != nil {
 		fmt.Printf("[hypist] err: %s\n", err)

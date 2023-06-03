@@ -15,8 +15,8 @@ import (
 
 func SignIn(ctx *gin.Context) {
 	var request struct {
-		Email    string
-		Password string
+    Email    string `json:"email"`
+    Password string `json:"password"`
 	}
 
 	if err := ctx.BindJSON(&request); err != nil {
@@ -28,7 +28,7 @@ func SignIn(ctx *gin.Context) {
 	db := ctx.MustGet("database").(*mongo.Database)
 	user, err := database.GetUser(ctx, db, "email", request.Email)
 	if err != nil {
-		fmt.Printf("[hypist] info: user not found:\n\t%v\n", err)
+		fmt.Printf("[hypist] info: user %s not found:\n\t%v\n", request.Email, err)
 		ctx.JSON(http.StatusNotFound, map[string]interface{}{"error": "user not found"})
 		return
 	}
@@ -42,7 +42,7 @@ func SignIn(ctx *gin.Context) {
 	correctPassword := validation.CheckPasswordHash(request.Password, user.Password)
 	if !correctPassword {
 		fmt.Printf("[hypist] info: incorrect password:\n\t%v\n", err)
-		ctx.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "inccorect password"})
+		ctx.JSON(http.StatusUnauthorized, map[string]interface{}{"error": "incorrect password"})
 		return
 	}
 
