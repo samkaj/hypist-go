@@ -1,9 +1,9 @@
 package api
 
 import (
-	"fmt"
-	"hypist/database"
-	"hypist/validation"
+	"apskrift/database"
+	"apskrift/validation"
+	"log"
 	"net/http"
 	"os"
 	"time"

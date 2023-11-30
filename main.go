@@ -2,7 +2,8 @@ package main
 
 import (
 	"context"
-	"hypist/api"
+	"apskrift/api"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -16,6 +17,7 @@ import (
 )
 
 func main() {
+    log.SetPrefix("[apskrift] ")
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic(err)
@@ -41,7 +43,7 @@ func mongoMiddleware(ctx *gin.Context) {
 		panic(err)
 	}
 	defer client.Disconnect(context.Background())
-	ctx.Set("database", client.Database("hypist"))
+	ctx.Set("database", client.Database("apskrift"))
 	ctx.Next()
 }
 

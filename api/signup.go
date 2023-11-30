@@ -1,8 +1,8 @@
 package api
 
 import (
-	"fmt"
-	"hypist/database"
+	"apskrift/database"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
