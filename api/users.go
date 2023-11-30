@@ -15,7 +15,7 @@ func DelUser(ctx *gin.Context) {
 	}
 
 	if err := ctx.BindJSON(&request); err != nil {
-		fmt.Printf("[hypist] err: failed to delete user:\n\t%v\n", err)
+		log.Printf("failed to delete user:\n\t%v\n", err)
 		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": "incomplete request body"})
 		return
 	}
@@ -23,7 +23,7 @@ func DelUser(ctx *gin.Context) {
 	db := ctx.MustGet("database").(*mongo.Database)
 	err := database.DeleteUser(ctx, db, request.Email)
 	if err != nil {
-		fmt.Printf("[hypist] err: failed to delete user:\n\t%v\n", err)
+		log.Printf("failed to delete user:\n\t%v\n", err)
 		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": "failed to delete user"})
 		return
 	}
@@ -33,13 +33,11 @@ func DelUser(ctx *gin.Context) {
 func LookupUser(ctx *gin.Context) {
 	email := ctx.Query("email")
 	name := ctx.Query("name")
-	fmt.Println(email)
-	fmt.Println(name)
 
 	var field string
 	var value string
 	if email == "" && name == "" {
-		fmt.Println("[hypist] info: received find user request without parameters")
+		log.Println("received find user request without parameters")
 		ctx.JSON(http.StatusBadRequest, map[string]interface{}{"error": "parameters name and email missing"})
 		return
 	}
@@ -55,7 +53,7 @@ func LookupUser(ctx *gin.Context) {
 	db := ctx.MustGet("database").(*mongo.Database)
 	_, err := database.GetUser(ctx, db, field, value)
 	if err != nil {
-		fmt.Printf("[hypist] info: user not found:\n\t%v\n", err)
+		log.Printf("user not found:\n\t%v\n", err)
 		ctx.JSON(http.StatusNotFound, map[string]interface{}{"error": "user not found"})
 		return
 	}

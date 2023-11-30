@@ -38,7 +38,7 @@ type checkPasswordParams struct {
 }
 
 func mockGetHash(input string) string {
-  // We don't care about security here, makes it faster with lower cost.
+	// We don't care about security here, makes it faster with lower cost.
 	hashedBytes, _ := bcrypt.GenerateFromPassword([]byte(input), 1)
 	return string(hashedBytes)
 }
@@ -66,4 +66,3 @@ func TestCheckPasswordHash(t *testing.T) {
 		})
 	}
 }
-
